@@ -1,0 +1,1 @@
+const mongoose=require('mongoose');module.exports=mongoose.model('Setting',new mongoose.Schema({key:String,value:String}));

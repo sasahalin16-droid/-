@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | <%= site.hero_title || 'Белая Роза' %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="https://img.icons8.com/?size=100&id=A7Hdomz1-4X_&format=png&color=000000" type="image/x-icon">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background-color: #fafaf9; color: #1c1917; overflow-x: hidden; }
+        h1, h2, h3, .serif { font-family: 'Playfair Display', serif; }
+        [x-cloak] { display: none !important; }
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .bento-card { background: white; border-radius: 24px; padding: 24px; transition: all 0.5s; border: 1px solid #f5f5f4; }
+        .bento-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); border-color: #fecdd3; }
+        .loader-overlay { position: fixed; inset: 0; z-index: 9999; background: #fff; display: flex; justify-content: center; align-items: center; }
+        .chat-widget { position: fixed; bottom: 20px; right: 20px; z-index: 9000; }
+    </style>
+</head>
+<body x-data="{ mobileMenu: false, modalOpen: false, serviceModal: '', chatOpen: false, chatMsg: '', messages: [{sender:'bot', text:'Здравствуйте! Чем могу помочь?'}] }">
+
+    <!-- MODAL FIXED -->
+    <div x-show="modalOpen" class="fixed inset-0 z-[100] flex items-center justify-center px-4" x-cloak>
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="modalOpen = false" x-transition.opacity></div>
+        <div class="bg-white rounded-[40px] shadow-2xl w-full max-w-lg relative z-10 overflow-hidden" x-transition.scale>
+            <div class="bg-stone-900 p-8 text-white">
+                <h3 class="text-3xl font-serif italic relative z-10">Запись</h3>
+                <p class="text-stone-400"><%= site.address %></p>
+                <button @click="modalOpen = false" class="absolute top-4 right-4 text-white"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <form class="p-8 space-y-4" @submit.prevent="
+                const f = new FormData($event.target);
+                fetch('/appointment/create', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify(Object.fromEntries(f.entries()))
+                }).then(r=>r.json()).then(d=>{
+                    if(d.success){alert('Заявка принята!');modalOpen=false;$event.target.reset();}
+                    else{alert('Ошибка');}
+                })">
+                <input type="text" name="name" placeholder="Имя" required class="w-full bg-stone-50 border-0 rounded-xl px-4 py-3">
+                <input type="text" name="phone" placeholder="Телефон" required class="w-full bg-stone-50 border-0 rounded-xl px-4 py-3">
+                <input type="text" name="service" :value="serviceModal" placeholder="Услуга" class="w-full bg-stone-50 border-0 rounded-xl px-4 py-3">
+                <button class="w-full bg-rose-500 text-white py-4 rounded-xl font-bold">Отправить</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- PRELOADER -->
+    <div class="loader-overlay" id="preloader">
+        <div class="text-center">
+            <div class="text-6xl text-rose-500 mb-4 opacity-0 scale-50" id="loader-icon"><i class="fas fa-spa"></i></div>
+            <div class="text-3xl font-serif text-slate-800 opacity-0 translate-y-4" id="loader-text">Белая Роза</div>
+        </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="chat-widget">
+        <div x-show="chatOpen" class="bg-white w-80 h-96 rounded-2xl shadow-xl flex flex-col mb-4 overflow-hidden" x-transition>
+            <div class="bg-stone-900 text-white p-3 flex justify-between"><span class="font-bold">Ассистент</span><button @click="chatOpen=false">x</button></div>
+            <div class="flex-1 overflow-y-auto p-4 space-y-2 bg-stone-50" id="cf">
+                <template x-for="m in messages"><div :class="m.sender==='bot'?'text-left':'text-right'"><span class="inline-block px-3 py-2 rounded-xl text-sm" :class="m.sender==='bot'?'bg-white':'bg-rose-500 text-white'" x-html="m.text"></span></div></template>
+            </div>
+            <form class="p-2 bg-white flex gap-2" @submit.prevent="if(!chatMsg)return; messages.push({sender:'user',text:chatMsg}); let q=chatMsg; chatMsg=''; fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q})}).then(r=>r.json()).then(d=>{messages.push({sender:'bot',text:d.reply});setTimeout(()=>{document.getElementById('cf').scrollTop=999},100)})">
+                <input x-model="chatMsg" class="w-full bg-stone-100 rounded px-2 py-1"><button>></button>
+            </form>
+        </div>
+        <button @click="chatOpen=!chatOpen" class="w-12 h-12 bg-rose-500 rounded-full text-white shadow-lg flex items-center justify-center text-xl hover:scale-110 transition float-right"><i class="fas fa-comment"></i></button>
+    </div>
+
+    <nav class="fixed w-full z-50 glass top-0 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
+            <a href="/" class="flex items-center gap-2 font-serif text-2xl"><div class="w-8 h-8 bg-rose-500 rounded-full flex items-center justify-center text-white italic">R</div>Belaya <span class="text-rose-500">Roza</span></a>
+            <div class="hidden md:flex gap-6 text-xs font-bold uppercase tracking-widest text-stone-500">
+                <a href="/" class="hover:text-rose-500">Главная</a><a href="/services" class="hover:text-rose-500">Услуги</a><a href="/doctors" class="hover:text-rose-500">Врачи</a><a href="/reviews" class="hover:text-rose-500">Отзывы</a><a href="/contacts" class="hover:text-rose-500">Контакты</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <% if(user) { %>
+                    <a href="<%= user.role==='admin'?'/admin':'/profile' %>" class="w-8 h-8 rounded-full bg-stone-200 overflow-hidden"><img src="<%= user.avatar||'https://ui-avatars.com/api/?name='+user.name %>" class="w-full h-full object-cover"></a>
+                    <a href="/auth/logout" class="text-stone-400 hover:text-red-500 text-lg"><i class="fas fa-sign-out-alt"></i></a>
+                <% } else { %>
+                    <a href="/auth/login" class="text-xs font-bold uppercase hover:text-rose-500">Войти</a>
+                <% } %>
+                <button @click="modalOpen=true" class="bg-stone-900 text-white px-5 py-2 rounded-full text-xs font-bold uppercase hover:bg-rose-500 transition">Запись</button>
+            </div>
+        </div>
+    </nav>
+    <div class="pt-20">

@@ -1,0 +1,1 @@
+const mongoose=require('mongoose');module.exports=mongoose.model('Doctor',new mongoose.Schema({name:String,spec:String,exp:String,img:String,bio:String}));

@@ -1,0 +1,111 @@
+
+<%- include('partials/header') %>
+<div class="min-h-screen bg-stone-50 pt-10 pb-20">
+    <div class="max-w-6xl mx-auto px-4">
+        
+        <!-- Header Card -->
+        <div class="bg-white rounded-[40px] shadow-xl p-8 mb-8 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-rose-100 to-stone-200 opacity-50"></div>
+            
+            <div class="relative z-10 w-32 h-32 rounded-full p-1 bg-white shadow-lg -mt-10 md:mt-0">
+                <img src="<%= userData.avatar || 'https://ui-avatars.com/api/?name=' + userData.name %>" class="w-full h-full rounded-full object-cover">
+            </div>
+            
+            <div class="relative z-10 text-center md:text-left flex-1">
+                <h1 class="text-4xl font-serif italic text-stone-900"><%= userData.name %></h1>
+                <p class="text-stone-500 mt-1"><%= userData.email %> • Пациент</p>
+            </div>
+            
+            <div class="relative z-10">
+                <a href="/auth/logout" class="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-rose-200 text-rose-500 hover:bg-rose-500 hover:text-white transition font-bold text-xs uppercase tracking-widest">
+                    <i class="fas fa-sign-out-alt"></i> Выход
+                </a>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            
+            <!-- Settings Column -->
+            <div class="md:col-span-1 space-y-6">
+                <div class="bg-white p-8 rounded-[40px] shadow-sm border border-stone-100">
+                    <h3 class="font-bold uppercase tracking-widest text-xs mb-6 text-stone-400 flex items-center gap-2">
+                        <i class="fas fa-cog"></i> Настройки профиля
+                    </h3>
+                    <form action="/profile/update" method="POST" class="space-y-4">
+                        <div>
+                            <label class="text-xs font-bold text-stone-400 ml-2">Имя</label>
+                            <input type="text" name="name" value="<%= userData.name %>" class="w-full bg-stone-50 border-0 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-stone-400 ml-2">Телефон</label>
+                            <input type="text" name="phone" value="<%= userData.phone || '' %>" placeholder="+7..." class="w-full bg-stone-50 border-0 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-stone-400 ml-2">Аватар (ссылка)</label>
+                            <input type="text" name="avatar" value="<%= userData.avatar || '' %>" placeholder="https://..." class="w-full bg-stone-50 border-0 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-stone-400 ml-2">Адрес</label>
+                            <input type="text" name="address" value="<%= userData.address || '' %>" placeholder="Ваш адрес" class="w-full bg-stone-50 border-0 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-stone-400 ml-2">О себе / Аллергии</label>
+                            <textarea name="bio" rows="3" placeholder="Заметки для врача..." class="w-full bg-stone-50 border-0 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition resize-none"><%= userData.bio || '' %></textarea>
+                        </div>
+                        <button class="w-full bg-stone-900 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-rose-500 transition shadow-lg">Сохранить</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- History Column -->
+            <div class="md:col-span-2 space-y-6">
+                <div class="bg-white p-8 rounded-[40px] shadow-sm border border-stone-100 min-h-[400px]">
+                    <h3 class="font-bold uppercase tracking-widest text-xs mb-6 text-stone-400 flex items-center gap-2">
+                        <i class="fas fa-history"></i> История посещений
+                    </h3>
+                    
+                    <% if(myApps.length > 0) { %>
+                        <div class="space-y-4">
+                            <% myApps.forEach(app => { %>
+                            <div class="group flex items-center justify-between p-5 border border-stone-100 rounded-3xl hover:bg-stone-50 transition hover:shadow-md">
+                                <div class="flex items-center gap-5">
+                                    <div class="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 text-xl group-hover:scale-110 transition">
+                                        <i class="fas fa-file-medical"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-bold text-stone-900 text-lg"><%= app.service || 'Прием врача' %></div>
+                                        <div class="text-xs text-stone-400 mt-1 flex items-center gap-2">
+                                            <i class="far fa-calendar"></i> <%= new Date(app.createdAt).toLocaleDateString() %>
+                                            <span class="w-1 h-1 bg-stone-300 rounded-full"></span>
+                                            <i class="far fa-clock"></i> <%= new Date(app.createdAt).toLocaleTimeString().slice(0,5) %>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide
+                                        <%= app.status === 'done' ? 'bg-green-100 text-green-600' : 
+                                           app.status === 'confirmed' ? 'bg-blue-100 text-blue-600' : 
+                                           app.status === 'canceled' ? 'bg-red-100 text-red-600' : 'bg-stone-100 text-stone-500' %>">
+                                        <%= app.status === 'new' ? 'Обработка' : 
+                                           app.status === 'confirmed' ? 'Подтверждено' : 
+                                           app.status === 'done' ? 'Завершено' : 'Отмена' %>
+                                    </span>
+                                </div>
+                            </div>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <div class="flex flex-col items-center justify-center h-64 text-center">
+                            <div class="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center text-stone-300 text-3xl mb-4">
+                                <i class="fas fa-folder-open"></i>
+                            </div>
+                            <p class="text-stone-400 font-medium">История посещений пуста</p>
+                            <button onclick="document.querySelector('[x-data]').__x.$data.modalOpen = true" class="mt-4 text-rose-500 font-bold hover:underline text-sm uppercase tracking-widest">Записаться на прием</button>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<%- include('partials/footer') %>

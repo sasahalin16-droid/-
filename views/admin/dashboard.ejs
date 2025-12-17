@@ -1,0 +1,199 @@
+
+<%- include('../partials/header') %>
+<div class="min-h-screen bg-stone-100 pb-20 pt-10" x-data="{ tab: 'apps' }">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-4xl font-serif italic text-stone-800">CMS Panel</h1>
+                <p class="text-stone-500 text-sm">Центр управления полетами</p>
+            </div>
+            
+            <!-- TABS -->
+            <div class="bg-white p-1 rounded-xl shadow-sm inline-flex flex-wrap justify-center gap-1">
+                <button @click="tab='apps'" :class="tab==='apps'?'bg-stone-900 text-white shadow':'text-stone-500 hover:bg-stone-50'" class="px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition">Заявки</button>
+                <button @click="tab='content'" :class="tab==='content'?'bg-stone-900 text-white shadow':'text-stone-500 hover:bg-stone-50'" class="px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition">Контент</button>
+                <button @click="tab='doctors'" :class="tab==='doctors'?'bg-stone-900 text-white shadow':'text-stone-500 hover:bg-stone-50'" class="px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition">Врачи</button>
+                <button @click="tab='services'" :class="tab==='services'?'bg-stone-900 text-white shadow':'text-stone-500 hover:bg-stone-50'" class="px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition">Услуги</button>
+                <button @click="tab='users'" :class="tab==='users'?'bg-stone-900 text-white shadow':'text-stone-500 hover:bg-stone-50'" class="px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition">Люди</button>
+            </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-stone-100">
+                <div class="text-xs uppercase tracking-widest text-stone-400 mb-2">Новых заявок</div>
+                <div class="text-3xl font-serif text-stone-800"><%= stats.newApps %></div>
+            </div>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-stone-100">
+                <div class="text-xs uppercase tracking-widest text-stone-400 mb-2">Всего записей</div>
+                <div class="text-3xl font-serif text-stone-800"><%= stats.apps %></div>
+            </div>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-stone-100">
+                <div class="text-xs uppercase tracking-widest text-stone-400 mb-2">Клиентов</div>
+                <div class="text-3xl font-serif text-stone-800"><%= stats.users %></div>
+            </div>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-stone-100">
+                <div class="text-xs uppercase tracking-widest text-stone-400 mb-2">Отзывов</div>
+                <div class="text-3xl font-serif text-stone-800"><%= stats.reviews %></div>
+            </div>
+        </div>
+
+        <!-- TAB: ЗАЯВКИ (APPLICATIONS) -->
+        <div x-show="tab==='apps'" class="bg-white rounded-[32px] shadow-xl border border-stone-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-stone-50 text-xs uppercase tracking-widest text-stone-500 border-b border-stone-100">
+                        <tr>
+                            <th class="p-6">Клиент</th>
+                            <th class="p-6">Услуга</th>
+                            <th class="p-6">Статус</th>
+                            <th class="p-6">Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-stone-100">
+                        <% appointments.forEach(app => { %>
+                        <tr class="hover:bg-stone-50 transition">
+                            <td class="p-6">
+                                <div class="font-bold text-stone-900"><%= app.name %></div>
+                                <div class="text-xs text-stone-400 font-mono"><%= app.phone %></div>
+                                <% if(app.email) { %><div class="text-xs text-stone-400"><%= app.email %></div><% } %>
+                            </td>
+                            <td class="p-6">
+                                <span class="bg-stone-100 text-stone-600 px-3 py-1 rounded-full text-xs font-bold uppercase"><%= app.service || 'Общее' %></span>
+                            </td>
+                            <td class="p-6">
+                                <span class="px-3 py-1 rounded-full text-xs font-bold uppercase 
+                                    <%= app.status === 'new' ? 'bg-rose-100 text-rose-600' : 
+                                       app.status === 'confirmed' ? 'bg-blue-100 text-blue-600' :
+                                       app.status === 'done' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500' %>">
+                                    <%= app.status %>
+                                </span>
+                            </td>
+                            <td class="p-6 flex gap-2">
+                                <form action="/admin/appointment/status" method="POST">
+                                    <input type="hidden" name="id" value="<%= app._id %>">
+                                    <button class="w-8 h-8 rounded-full bg-stone-200 hover:bg-stone-800 hover:text-white transition flex items-center justify-center" title="Сменить статус"><i class="fas fa-sync-alt text-xs"></i></button>
+                                </form>
+                                <form action="/admin/appointment/delete" method="POST" onsubmit="return confirm('Удалить?')">
+                                    <input type="hidden" name="id" value="<%= app._id %>">
+                                    <button class="w-8 h-8 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center"><i class="fas fa-trash text-xs"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB: КОНТЕНТ (SETTINGS) -->
+        <div x-show="tab==='content'" class="bg-white rounded-[32px] p-8 shadow-xl border border-stone-100" x-cloak>
+            <h3 class="text-2xl font-serif italic mb-6">Настройки сайта</h3>
+            <form action="/admin/settings/update" method="POST" class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest mb-2 text-stone-400">Заголовок (Главная)</label>
+                    <input name="hero_title" value="<%= settings.hero_title %>" class="w-full bg-stone-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-rose-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest mb-2 text-stone-400">Подзаголовок</label>
+                    <input name="hero_subtitle" value="<%= settings.hero_subtitle %>" class="w-full bg-stone-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-rose-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest mb-2 text-stone-400">Телефон</label>
+                    <input name="phone" value="<%= settings.phone %>" class="w-full bg-stone-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-rose-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest mb-2 text-stone-400">Адрес</label>
+                    <input name="address" value="<%= settings.address %>" class="w-full bg-stone-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-rose-500 transition">
+                </div>
+                <div class="md:col-span-2">
+                    <button class="bg-stone-900 text-white px-8 py-3 rounded-xl font-bold uppercase tracking-widest hover:bg-rose-500 transition">Сохранить изменения</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- TAB: ВРАЧИ (DOCTORS) -->
+        <div x-show="tab==='doctors'" class="space-y-8" x-cloak>
+            <!-- Add Form -->
+            <div class="bg-white p-8 rounded-[32px] shadow-sm border border-stone-100">
+                <h3 class="font-bold uppercase tracking-widest text-xs mb-4 text-stone-400">Добавить специалиста</h3>
+                <form action="/admin/doctor/add" method="POST" class="grid md:grid-cols-5 gap-4">
+                    <input name="name" placeholder="ФИО" class="bg-stone-50 border-0 rounded-xl p-3 text-sm">
+                    <input name="spec" placeholder="Специальность" class="bg-stone-50 border-0 rounded-xl p-3 text-sm">
+                    <input name="exp" placeholder="Стаж" class="bg-stone-50 border-0 rounded-xl p-3 text-sm">
+                    <input name="img" placeholder="URL Фото" class="bg-stone-50 border-0 rounded-xl p-3 text-sm">
+                    <button class="bg-rose-500 text-white rounded-xl p-3 font-bold uppercase text-xs hover:bg-rose-600 transition">Добавить</button>
+                </form>
+            </div>
+            <!-- List -->
+            <div class="grid md:grid-cols-3 gap-6">
+                <% doctors.forEach(d => { %>
+                <div class="bg-white p-4 rounded-3xl shadow-sm flex items-center gap-4 border border-stone-100">
+                    <img src="<%= d.img %>" class="w-16 h-16 rounded-2xl object-cover">
+                    <div class="flex-1 min-w-0">
+                        <div class="font-bold text-stone-900 truncate"><%= d.name %></div>
+                        <div class="text-xs text-rose-500 uppercase tracking-widest truncate"><%= d.spec %></div>
+                    </div>
+                    <form action="/admin/doctor/delete" method="POST" onsubmit="return confirm('Удалить?')">
+                        <input type="hidden" name="id" value="<%= d._id %>">
+                        <button class="text-stone-300 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
+                    </form>
+                </div>
+                <% }) %>
+            </div>
+        </div>
+
+        <!-- TAB: УСЛУГИ (SERVICES) -->
+        <div x-show="tab==='services'" class="space-y-8" x-cloak>
+             <div class="bg-white p-8 rounded-[32px] shadow-sm border border-stone-100">
+                <h3 class="font-bold uppercase tracking-widest text-xs mb-4 text-stone-400">Добавить услугу</h3>
+                <form action="/admin/service/add" method="POST" class="grid md:grid-cols-5 gap-4">
+                    <input name="category" placeholder="Категория" class="bg-stone-50 border-0 rounded-xl p-3 text-sm">
+                    <input name="name" placeholder="Название" class="bg-stone-50 border-0 rounded-xl p-3 text-sm">
+                    <input name="price" placeholder="Цена" class="bg-stone-50 border-0 rounded-xl p-3 text-sm">
+                    <input name="desc" placeholder="Описание" class="bg-stone-50 border-0 rounded-xl p-3 text-sm">
+                    <button class="bg-rose-500 text-white rounded-xl p-3 font-bold uppercase text-xs hover:bg-rose-600 transition">Добавить</button>
+                </form>
+            </div>
+            <div class="bg-white rounded-[32px] shadow-sm p-6 border border-stone-100">
+                <table class="w-full text-left text-sm">
+                    <tbody>
+                        <% services.forEach(s => { %>
+                        <tr class="border-b last:border-0 border-stone-100 group hover:bg-stone-50">
+                            <td class="py-3 px-4 text-stone-400 text-xs uppercase"><%= s.category %></td>
+                            <td class="py-3 px-4 font-bold text-stone-800"><%= s.name %></td>
+                            <td class="py-3 px-4 font-serif italic text-lg"><%= s.price %>₽</td>
+                            <td class="py-3 px-4 text-right">
+                                <form action="/admin/service/delete" method="POST" class="inline">
+                                    <input type="hidden" name="id" value="<%= s._id %>">
+                                    <button class="text-stone-300 hover:text-red-500"><i class="fas fa-times"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB: ЛЮДИ (USERS) -->
+        <div x-show="tab==='users'" class="grid md:grid-cols-3 gap-4" x-cloak>
+             <% users.forEach(u => { %>
+             <div class="bg-white p-6 rounded-3xl shadow-sm border border-stone-100 flex items-center gap-4">
+                 <img src="<%= u.avatar || 'https://ui-avatars.com/api/?name='+u.name %>" class="w-12 h-12 rounded-full object-cover">
+                 <div class="flex-1 min-w-0">
+                     <div class="font-bold text-stone-900 truncate"><%= u.name %></div>
+                     <div class="text-xs text-stone-400 truncate"><%= u.email %></div>
+                     <div class="text-[10px] uppercase font-bold text-rose-500 mt-1"><%= u.role %></div>
+                 </div>
+                 <form action="/admin/user/role" method="POST">
+                    <input type="hidden" name="id" value="<%= u._id %>">
+                    <button class="w-8 h-8 rounded-full border border-stone-200 hover:bg-stone-900 hover:text-white transition flex items-center justify-center text-xs"><i class="fas fa-user-shield"></i></button>
+                 </form>
+             </div>
+             <% }) %>
+        </div>
+
+    </div>
+</div>
+<%- include('../partials/footer') %>

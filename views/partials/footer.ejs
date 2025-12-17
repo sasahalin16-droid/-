@@ -1,0 +1,6 @@
+</div><footer class="bg-stone-900 text-white py-12 mt-auto"><div class="max-w-7xl mx-auto px-4 grid md:grid-cols-3 gap-8"><div><div class="font-serif text-2xl italic mb-4">Belaya Roza</div><p class="text-stone-400 text-sm"><%= site.hero_subtitle %></p></div><div><h4 class="font-bold uppercase text-xs mb-4 text-stone-500">Контакты</h4><p class="text-stone-300 text-sm"><%= site.address %></p><p class="text-stone-300 text-sm font-bold"><%= site.phone %></p></div><div><button @click="modalOpen=true" class="w-full border border-stone-700 py-3 rounded-full text-sm uppercase hover:bg-rose-500 hover:border-rose-500 transition">Записаться</button></div></div><div class="text-center mt-10 text-stone-600 text-xs">© 2025 Belaya Roza.</div></footer>
+<script>
+window.addEventListener('load',()=>{gsap.to("#loader-icon",{opacity:1,scale:1,duration:1});gsap.to("#loader-text",{opacity:1,y:0,duration:0.8,delay:0.2});gsap.to("#preloader",{opacity:0,duration:0.5,delay:1.5,onComplete:()=>document.getElementById('preloader').remove()});});
+gsap.registerPlugin(ScrollTrigger);
+gsap.utils.toArray('.reveal').forEach(elem=>{gsap.from(elem,{scrollTrigger:{trigger:elem,start:"top 85%"},y:30,opacity:0,duration:0.8,ease:"power3.out"})});
+</script></body></html>

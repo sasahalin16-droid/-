@@ -1,0 +1,1 @@
+const mongoose=require('mongoose');module.exports=mongoose.model('Review',new mongoose.Schema({user:{type:mongoose.Schema.Types.ObjectId,ref:'User'},userName:String,userAvatar:String,rating:Number,text:String,photoUrl:String,isPublished:{type:Boolean,default:true},createdAt:{type:Date,default:Date.now}}));

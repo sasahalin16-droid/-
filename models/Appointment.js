@@ -1,0 +1,1 @@
+const mongoose=require('mongoose');module.exports=mongoose.model('Appointment',new mongoose.Schema({userId:{type:mongoose.Schema.Types.ObjectId,ref:'User'},name:String,phone:String,email:String,service:String,status:{type:String,default:'new'},createdAt:{type:Date,default:Date.now}}));

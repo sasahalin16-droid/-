@@ -1,0 +1,1 @@
+const mongoose=require('mongoose');module.exports=mongoose.model('Service',new mongoose.Schema({category:String,name:String,price:Number,desc:String}));
